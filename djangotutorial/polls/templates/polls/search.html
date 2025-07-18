@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.1/dist/stimulus.umd.js"></script>
+  <script type="module" src="{% static 'polls/chat_controller.js' %}"></script>
+</head>
+<body>
+
+  <div data-controller="chat" class="max-w-3xl mx-auto pt-24">
+    <div data-chat-target="messages">
+
+      {% for m in messages %}
+        {% if m.role == 'user' %}
+          <div class="text-right font-bold">{{ m.content }}</div>
+        {% else %}
+          <div>{{ m.content }}</div>
+
+          <div>
+          {% for r in m.cards %}
+              <div>
+              <h3 class="mt-4 text-lg font-semibold">{{ r.title }}</h3>
+              <p class="mt-2 text-sm">{{ r.description }}</p>
+              {% if r.video %}
+                  <video controls class="mt-4 w-full rounded">
+                  <source src="{{ r.video }}" type="video/mp4">
+                  </video>
+              {% endif %}
+              </div>
+          {% endfor %}
+          </div>
+          
+        {% endif %}
+      {% endfor %}
+
+    </div>
+
+    <div data-chat-target="suggestions"
+     data-action="click->chat#select">
+     
+    </div>  
+
+
+    <form data-chat-target="inputBox" data-action="submit->chat#send" class="flex items-center w-full max-w-3xl mt-6 pb-8">
+
+      <button type="button"
+        class="px-4 py-3 bg-gray-300 rounded"
+        data-action="click->chat#clear">
+        🗑
+      </button>
+
+      <input 
+        data-chat-target="input"
+        data-action="input->chat#onInput"
+        type="text" name="q"
+        placeholder="Ask anything..." 
+        class="w-full p-3 rounded border border-gray-300 focus:outline-none focus:ring"
+        autocomplete="off">
+
+      <button type="submit"
+        class="px-4 py-3 bg-gray-300 rounded">
+        ➤
+      </button>
+
+    </form>
+
+  </div>
+
+</body>
+</html>

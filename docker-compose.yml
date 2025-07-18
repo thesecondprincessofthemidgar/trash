@@ -1,0 +1,66 @@
+# docker-compose.dev.yml
+services:
+  media-tunnel:
+    image: jnovack/autossh:latest
+    volumes:
+      - /Users/user/.ssh/media_sync:/id_rsa:ro
+    environment:
+      - SSH_REMOTE_USER=root
+      - SSH_REMOTE_HOST=89.111.173.9
+      - SSH_REMOTE_PORT=22
+      - SSH_MODE=-L              # local forward
+      - SSH_BIND_IP=0.0.0.0
+      - SSH_TUNNEL_PORT=8080     # local port
+      - SSH_TARGET_HOST=localhost
+      - SSH_TARGET_PORT=9000     # remote service
+      - SSH_KEY_FILE=/id_rsa
+      - AUTOSSH_GATETIME=0
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+  ss-local:
+    image: shadowsocks/shadowsocks-libev
+    command:
+      - ss-local
+      - -s
+      - 109.120.151.146
+      - -p
+      - "31856"
+      - -k
+      - L9mOiSnCSnG2Pvp0WaWSyW
+      - -m
+      - chacha20-ietf-poly1305
+      - -b
+      - 0.0.0.0
+      - -l
+      - "1080"
+    ports:
+      - "1080:1080"
+    restart: unless-stopped
+
+  web:
+    env_file:
+      - .env.dev
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    working_dir: /app/djangotutorial
+    volumes:
+      - .:/app
+      - ./djangotutorial:/app/djangotutorial
+      - .:/app/static
+    ports:
+      - "8000:8000"
+
+    command: >
+      sh -c "cd /app/djangotutorial &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - ss-local
+
+volumes:
+  pgdata:
