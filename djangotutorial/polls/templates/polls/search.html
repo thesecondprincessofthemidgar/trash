@@ -4,15 +4,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Search</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.1/dist/stimulus.umd.js"></script>
   <script type="module" src="{% static 'polls/chat_controller.js' %}"></script>
 </head>
+
+
 <body>
 
   <div data-controller="chat" class="max-w-3xl mx-auto pt-24">
+    {{ messages|json_script:"initial-messages" }}
+    <script>
+      const INITIAL_MESSAGES = JSON.parse(document.getElementById('initial-messages').textContent);
+      window.SYNC_CONTEXT = {
+        room: "{{ room|escapejs }}",
+        anime_id: "{{ anime_id|escapejs }}",
+        episode: "{{ episode|escapejs }}"
+      };
+    </script>
     <div data-chat-target="messages">
 
+<!-- 
       {% for m in messages %}
         {% if m.role == 'user' %}
           <div class="text-right font-bold">{{ m.content }}</div>
@@ -20,22 +33,15 @@
           <div>{{ m.content }}</div>
 
           <div>
-          {% for r in m.cards %}
-              <div>
-              <h3 class="mt-4 text-lg font-semibold">{{ r.title }}</h3>
-              <p class="mt-2 text-sm">{{ r.description }}</p>
-              {% if r.video %}
-                  <video controls class="mt-4 w-full rounded">
-                  <source src="{{ r.video }}" type="video/mp4">
-                  </video>
-              {% endif %}
-              </div>
-          {% endfor %}
+          {% if m.cards %}
+            {% for r in m.cards %}
+              {% include "polls/card.html" %}
+            {% endfor %}
+          {% endif %}
           </div>
           
         {% endif %}
-      {% endfor %}
-
+      {% endfor %} -->
     </div>
 
     <div data-chat-target="suggestions"

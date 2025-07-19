@@ -1,0 +1,15 @@
+<div>
+  <h3 class="mt-4 text-lg font-bold">{{ r.title }}</h3>
+  <p class="mt-2 text-sm font-bold">{{ r.description }}</p>
+  
+  {% if r.video %}
+    <a href="{% url 'create_sync_room' %}?anime_id={{ r.id }}&episode={{ r.episode }}&player_idx={{ forloop.counter0 }}">Создать совместный просмотр</a>
+    <input value="{{ room_url }}" readonly>
+    <video
+      data-anime-id="{{ r.id }}"
+      data-episode="{{ r.episode }}"
+      controls class="mt-4 w-full rounded">
+      <source src="{{ r.video }}" type="video/mp4">
+    </video>
+  {% endif %}
+</div>

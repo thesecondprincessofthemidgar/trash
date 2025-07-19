@@ -11,5 +11,6 @@ urlpatterns = [
     path('search/', polls_views.search, name='search'),
     re_path(r"^media-proxy/(?P<path>.+)$", polls_views.media_proxy),
     path('suggestions/', polls_views.suggestions, name='suggestions'),
-    path('clear/', polls_views.clear_history, name='clear_history')
+    path('clear/', polls_views.clear_history, name='clear_history'),
+    path('create_sync_room/', polls_views.create_sync_room, name='create_sync_room'),
 ]

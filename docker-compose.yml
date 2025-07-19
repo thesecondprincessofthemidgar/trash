@@ -44,7 +44,7 @@ services:
       - .env.dev
 
     build:
-      context: .
+      context: ./djangotutorial
       dockerfile: Dockerfile
 
     working_dir: /app/djangotutorial
@@ -56,11 +56,26 @@ services:
       - "8000:8000"
 
     command: >
-      sh -c "cd /app/djangotutorial &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+      sh -c "cd /app/djangotutorial && python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --insecure"
+      # sh -c "cd /app/djangotutorial && python manage.py migrate && daphne -b 0.0.0.0 -p 8000 mysite.asgi:application"
     depends_on:
       - ss-local
+      - redis
+
+  socketio:
+    build: ./socketio
+    ports:
+      - "5001:5000"
+    depends_on:
+      - redis
+    volumes:
+      - ./socketio:/app
+
+  redis:
+    build: ./socketio
+    image: redis:alpine
+    ports:
+      - "6379:6379"
 
 volumes:
   pgdata:

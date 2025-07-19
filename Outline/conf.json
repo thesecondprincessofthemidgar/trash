@@ -1,8 +1,0 @@
-{
-  "server": "109.120.151.146:31856",
-  "server_port": 12345,
-  "password": "the-password-from-your-URI",
-  "method": "AES-256-CFB",
-  "timeout": 300,
-  "fast_open": false
-}

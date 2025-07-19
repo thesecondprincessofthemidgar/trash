@@ -91,6 +91,37 @@ def search(request):
 
     # 2) Загружаем историю (без системного сообщения!)
     history = request.session.get('chat_messages', [])
+    anime_id = request.GET.get('anime_id')
+    episode = request.GET.get('episode')
+    if anime_id and episode:
+        try:
+            anime = Anime.objects.get(id=anime_id)
+            room_url = request.build_absolute_uri(f"/?room={anime_id}&anime_id={anime_id}&episode={episode}")
+            last_msg = history[-1] if history else {}
+            is_duplicate = (
+                last_msg.get('role') == 'assistant' and
+                last_msg.get('cards') and
+                str(last_msg['cards'][0].get('id')) == str(anime_id) and
+                str(last_msg['cards'][0].get('episode')) == str(episode)
+            )
+            if not is_duplicate:
+                history.append({
+                    'role': 'assistant',
+                    'cards': [{
+                        'id': anime.id,
+                        'title': anime.name,
+                        'episode': episode,
+                        'description': 'Here it is!',
+                        'image': f'{settings.MEDIA_BASE_URL.rstrip("/")}/DB/{anime.id}.jpg',
+                        'video': f'{settings.MEDIA_BASE_URL.rstrip("/")}/DB/{anime.id}/{anime.id}.mp4',
+                    }]
+                })
+                print('Сохраняю историю:', history)
+                request.session['chat_messages'] = history
+                request.session.modified = True
+        except Anime.DoesNotExist:
+            anime = None
+            room_url = ''
 
     # 3) Системное сообщение всегда ставим первым в каждом запросе к API
     system_context = {
@@ -139,7 +170,9 @@ def search(request):
             history.append({
                 'role': 'assistant',
                 'cards': [{
+                    'id': anime.id,
                     'title': anime.name,
+                    'episode': 0,
                     'description': 'Here it is!',
                     'image': f'{base}DB/{anime.id}.jpg',
                     'video': f'{base}DB/{anime.id}/{anime.id}.mp4',
@@ -154,5 +187,14 @@ def search(request):
     # 9) Рендерим всегда на выходе
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'messages': history}, safe=False)
-    return render(request, 'polls/search.html', {'messages': history})
-    
+    return render(request, 'polls/search.html', {"messages": history})
+
+
+import uuid
+def create_sync_room(request):
+    room_id = str(uuid.uuid4())[:8]  # короткий id
+    anime_id = request.GET.get('anime_id')
+    episode = request.GET.get('episode')
+    room_id = str(uuid.uuid4())[:8]
+    url = request.build_absolute_uri(f"/?room={room_id}&anime_id={anime_id}&episode={episode}")
+    return redirect(url)
